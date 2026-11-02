@@ -47,3 +47,17 @@ def test_smoke(tmp_path):
 
     G_AB, G_BA, epoca = models.load_generators(run / "G_epoca_003.pt")
     assert epoca == 3 and not G_AB.training and not G_BA.training
+
+    # traduzir: RGBA não quadrada, nos dois domínios e ladrilhada
+    rgba = tmp_path / "demo.png"
+    Image.frombytes("RGBA", (100, 70), rng.randbytes(100 * 70 * 4)).save(rgba)
+    ruim = tmp_path / "ruim.jpg"
+    ruim.write_text("não é imagem")
+    pesos = str(run / "G_epoca_002.pt")
+    for dom, extra in (("A", []), ("B", []), ("A", ["--ladrilhar"])):
+        saida = tmp_path / f"trad_{dom}{len(extra)}"
+        analyze.main(["traduzir", "--pesos", pesos, "--imagens", str(ruim), str(rgba), "--dominio", dom,
+                      "--out", str(saida), "--size", "64"] + extra)
+        for suf in ["original", "traduzida", "reconstruida", "lado_a_lado"]:
+            assert (saida / f"demo_{suf}.jpg").exists(), (dom, extra, suf)
+    assert Image.open(tmp_path / "trad_A1" / "demo_original.jpg").size == (128, 64)  # ladrilhado: múltiplos de 64

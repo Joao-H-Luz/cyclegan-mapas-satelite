@@ -196,6 +196,24 @@ Na primeira execução chega uma mensagem na hora, o que confirma que o celular 
 
 Se as mensagens pararem de chegar sem nenhum alerta, o PC suspendeu, caiu a internet ou o próprio monitor foi fechado: vale ir ver.
 
+## Demo no notebook (traduzir imagens com os pesos treinados)
+
+Roda na CPU, sem GPU. Precisa do repositório clonado com `uv sync` e de um `G_epoca_XXX.pt`, que fica em `runs\principal\` no PC de treino e **não vai pelo git** (copie por pendrive ou Drive, são uns 46 MB).
+
+```bash
+# mapa -> satélite (padrão: --dominio A)
+uv run python analyze.py traduzir --pesos G_epoca_030.pt --imagens mapa1.png mapa2.png mapa3.png
+
+# satélite -> mapa
+uv run python analyze.py traduzir --pesos G_epoca_030.pt --dominio B --imagens foto_aerea.jpg
+```
+
+Para cada imagem, a pasta `traducoes/` recebe `nome_original.jpg`, `nome_traduzida.jpg`, `nome_reconstruida.jpg` (volta ao domínio de origem, que é o ciclo) e `nome_lado_a_lado.jpg`.
+
+- Por padrão a imagem é redimensionada para 256×256, que é o tamanho do treino. Um mapa retangular fica deformado.
+- Com `--ladrilhar`, a imagem inteira é traduzida em blocos de 256×256 e costurada, o que serve para mapas grandes. Podem aparecer emendas entre os blocos.
+- O modelo foi treinado com recortes de 256×256, então a escala do mapa importa: recortes com ruas e quadras de tamanho parecido com os do dataset funcionam melhor do que um mapa inteiro de uma cidade reduzido.
+
 ## Problemas comuns
 
 **`torch.cuda.is_available()` dá `False` / treino lento em CPU**

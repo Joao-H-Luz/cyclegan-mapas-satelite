@@ -139,6 +139,62 @@ def cmd_evolucao(args):
         print(f"Salvo: {destino}")
 
 
+# ---------- traduzir ----------
+
+def cmd_traduzir(args):
+    import time
+
+    import torch  # preguiçoso: dataset/curvas/evolucao não carregam torch
+
+    import models
+
+    s = args.size
+    if s % 4:
+        raise SystemExit("--size precisa ser múltiplo de 4")
+    dev = "cuda" if torch.cuda.is_available() else "cpu"
+    G_AB, G_BA, epoca = models.load_generators(args.pesos, dev)
+    G_ida, G_volta = (G_AB, G_BA) if args.dominio == "A" else (G_BA, G_AB)
+    print(f"Pesos: {args.pesos} (época {epoca}) | entrada: domínio {args.dominio} | dispositivo: {dev}")
+    out = Path(args.out)
+    out.mkdir(parents=True, exist_ok=True)
+    legendas = ("original", "traduzida", "reconstruída")
+    topo, f = max(24, s // 8), fonte(max(12, s // 10))
+    for caminho in args.imagens:
+        try:
+            with Image.open(caminho) as im:
+                img = im.convert("RGB")
+        except (OSError, ValueError) as e:
+            print(f"Aviso: não consegui ler {caminho} ({e}), ignorada.")
+            continue
+        t0 = time.time()
+        if args.ladrilhar:  # lados múltiplos de size, proporção aproximada
+            w, h = (max(1, round(l / s)) * s for l in img.size)
+        else:
+            w = h = s
+        img = img.resize((w, h), Image.LANCZOS)
+        # mesma normalização de models.load_image
+        x = torch.frombuffer(bytearray(img.tobytes()), dtype=torch.uint8).view(h, w, 3).permute(2, 0, 1).float() / 127.5 - 1.0
+        trad, rec = torch.zeros_like(x), torch.zeros_like(x)
+        with torch.no_grad():
+            for y0 in range(0, h, s):
+                for x0 in range(0, w, s):
+                    bloco = x[None, :, y0:y0 + s, x0:x0 + s].to(dev)
+                    b = G_ida(bloco)
+                    trad[:, y0:y0 + s, x0:x0 + s] = b[0].cpu()
+                    rec[:, y0:y0 + s, x0:x0 + s] = G_volta(b)[0].cpu()
+        imagens = (img, models.to_pil(trad), models.to_pil(rec))
+        nome = Path(caminho).stem
+        for sufixo, im in zip(("original", "traduzida", "reconstruida"), imagens):
+            im.save(out / f"{nome}_{sufixo}.jpg", quality=92)
+        tela = Image.new("RGB", (3 * w, topo + h), "white")
+        d = ImageDraw.Draw(tela)
+        for j, (im, leg) in enumerate(zip(imagens, legendas)):
+            tela.paste(im, (j * w, topo))
+            d.text(((j + 0.5) * w, topo // 2), leg, fill="black", font=f, anchor="mm")
+        tela.save(out / f"{nome}_lado_a_lado.jpg", quality=92)
+        print(f"Salvo: {out / (nome + '_lado_a_lado.jpg')} ({w}x{h}, {time.time() - t0:.1f} s)")
+
+
 # ---------- main ----------
 
 def main(argv=None):
@@ -157,6 +213,15 @@ def main(argv=None):
     p.add_argument("run")
     p.add_argument("--epocas", default=None, help="lista separada por vírgula, ex.: 1,5,10")
     p.set_defaults(fn=cmd_evolucao)
+    p = sub.add_parser("traduzir", help="traduz imagens com os pesos treinados (demo)")
+    p.add_argument("--pesos", required=True, help="G_epoca_XXX.pt ou last.pt")
+    p.add_argument("--imagens", nargs="+", required=True)
+    p.add_argument("--dominio", choices=["A", "B"], default="A", help="domínio de entrada: A usa G_AB (mapa→satélite), B usa G_BA")
+    p.add_argument("--out", default="traducoes")
+    p.add_argument("--size", type=int, default=256, help="lado do bloco (múltiplo de 4)")
+    p.add_argument("--ladrilhar", action="store_true",
+                   help="traduz a imagem inteira em blocos size×size e costura o mosaico (sem blending: podem aparecer emendas)")
+    p.set_defaults(fn=cmd_traduzir)
     args = ap.parse_args(argv)
     args.fn(args)
 
