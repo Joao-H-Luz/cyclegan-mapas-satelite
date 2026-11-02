@@ -1,0 +1,17 @@
+# Config local do Claude Code (não vai para o GitHub)
+CLAUDE.md
+.claude/
+
+# Dados e enunciado (o zip é copiado à mão para o PC de treino)
+data/
+dados.zip
+*Zone.Identifier
+Trabalho Implementacao GAN.pdf
+
+# Pesos: grandes demais para o git; ficam só no PC
+runs/**/*.pt
+runs/**/*.pt.tmp
+
+.venv/
+__pycache__/
+.pytest_cache/
