@@ -181,6 +181,21 @@ uv run python train.py --data data --run ablacao_id --lambda-id 0.5 --epochs 20 
 
 Como `--decay-start 50` é maior que `--epochs 20`, o LR fica **constante** nas 20 épocas, que é comparável com as primeiras épocas do principal. Para enviar: `git add runs/ablacao_id`, commit e push, como na seção 8. Para retomar, adicione `--resume`.
 
+## Acompanhar o treino pelo celular (opcional)
+
+O `monitor.py` roda num **segundo terminal**, com o treino já iniciado, e manda uma mensagem para o celular a cada 30 min: épocas concluídas, época e iteração atuais, perdas, min/época, horas restantes e temperatura/VRAM da GPU. Ele também alerta **na hora** se o treino travar (10 min sem progresso), se as perdas virarem NaN ou quando o treino terminar.
+
+1. No celular, instale o app **ntfy** (Android/iOS) e assine um tópico com um nome longo e aleatório, por exemplo `ganmapas-x7k2q9w4m1` (quem souber o nome consegue ler as mensagens, então não use algo adivinhável).
+2. No PC, em outro terminal na pasta do projeto:
+
+```powershell
+uv run python monitor.py --run principal --topic ganmapas-x7k2q9w4m1
+```
+
+Na primeira execução chega uma mensagem na hora, o que confirma que o celular está recebendo. Sem `--topic`, ele só imprime no terminal. Use `--every 15` para mudar o intervalo e `--once` para testar.
+
+Se as mensagens pararem de chegar sem nenhum alerta, o PC suspendeu, caiu a internet ou o próprio monitor foi fechado: vale ir ver.
+
 ## Problemas comuns
 
 **`torch.cuda.is_available()` dá `False` / treino lento em CPU**
