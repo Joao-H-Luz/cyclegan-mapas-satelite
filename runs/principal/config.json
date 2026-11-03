@@ -1,0 +1,43 @@
+{
+  "args": {
+    "data": "data",
+    "run": "principal",
+    "runs_dir": "runs",
+    "epochs": 100,
+    "decay_start": 50,
+    "lambda_cyc": 10.0,
+    "lambda_id": 0.0,
+    "lr": 0.0002,
+    "size": 256,
+    "max_iters": null,
+    "snapshot_every": 5,
+    "workers": 4,
+    "log_every": 50,
+    "n_amostras": 4,
+    "seed": 42,
+    "resume": false,
+    "no_amp": false
+  },
+  "torch": "2.14.1+cu126",
+  "dispositivo": "NVIDIA GeForce RTX 2060",
+  "inicio": "2026-11-02T13:55:28",
+  "n_train": {
+    "A": 6099,
+    "B": 6586
+  },
+  "iters_por_epoca": 6586,
+  "amostras_fixas": {
+    "A": [
+      "rumsey_RUMSEY_8_1_362173_90129637_1389_2745.jpg",
+      "rumsey_RUMSEY_8_1_24644_930020_2656_2311.jpg",
+      "rumsey_RUMSEY_8_1_372832_90139564_4516_3185.jpg",
+      "rumsey_RUMSEY_8_1_371219_90138026_1645_3877.jpg"
+    ],
+    "B": [
+      "usgs_providence_z16_19766_24374.jpg",
+      "usgs_baltimore_z16_18815_24976.jpg",
+      "usgs_baltimore_z14_4705_6242.jpg",
+      "usgs_sacramento_z15_5328_12575.jpg"
+    ]
+  }
+}
