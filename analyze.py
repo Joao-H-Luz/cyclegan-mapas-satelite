@@ -128,7 +128,7 @@ def cmd_evolucao(args):
         d = ImageDraw.Draw(tela)
         d.text((s // 2, topo // 2), "real", fill="black", font=f, anchor="mm")
         for j, e in enumerate(epocas):
-            d.text(((j + 1.5) * s, topo // 2), f"trad. ép. {e}", fill="black", font=f, anchor="mm")
+            d.text(((j + 1.5) * s, topo // 2), f"trad. ep. {e}", fill="black", font=f, anchor="mm")
         for i in range(n):
             y = (deslocamento + i) * s
             tela.paste(grades[epocas[0]].crop((0, y, s, y + s)), (0, topo + i * s))

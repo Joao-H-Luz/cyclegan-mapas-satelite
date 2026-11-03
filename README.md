@@ -22,7 +22,7 @@ Todas as imagens são JPEG 256×256 RGB.
 | A | recortes de mapas históricos (David Rumsey Map Collection): cadastrais, topográficos, rodoviários, muitos com texto | 6099 | 1056 |
 | B | ortoimagens aéreas do USGS de cidades dos EUA, nos zooms 14–16 | 6586 | 947 |
 
-As cidades do conjunto de teste são **diferentes** das de treino, para que o teste meça generalização e não memorização.
+Em B, 20 das 21 regiões do teste (785 de 947 imagens) também aparecem no treino, mas em tiles diferentes, sem nenhuma imagem repetida; só Baltimore (162 imagens) é inédita. Em A, nenhum mapa do teste aparece no treino (conferido pelo id do Rumsey no nome do arquivo). O teste mede generalização para recortes novos, não para regiões novas.
 
 ![Exemplos dos dois domínios](figuras/dataset_exemplos.jpg)
 
