@@ -28,8 +28,40 @@ def listar(pasta):
     return sorted(p for p in pasta.iterdir() if p.suffix.lower() in EXTS)
 
 
+def indices_uniformes(n, total, gen):
+    """`total` índices em [0, n) em ordem aleatória, cobrindo todos de forma uniforme.
+
+    Concatena permutações completas (cada índice aparece floor(total/n) ou ceil(total/n) vezes)
+    e embaralha o resultado, sem viés para os primeiros índices."""
+    reps = -(-total // n)
+    seq = torch.cat([torch.randperm(n, generator=gen) for _ in range(reps)])[:total]
+    return seq[torch.randperm(total, generator=gen)].tolist()
+
+
+class AmostradorPares(torch.utils.data.Sampler):
+    """Gera pares de índices (ia, ib) por época, sorteados no processo principal com `gen`.
+
+    A e B são percorridos de forma uniforme e independente (par não pareado); o resultado só
+    depende de `gen`, então é determinístico por --seed e independente do nº de workers."""
+
+    def __init__(self, nA, nB, gen, total=None):
+        self.nA, self.nB, self.gen = nA, nB, gen
+        self.total = total or max(nA, nB)
+
+    def __len__(self):
+        return self.total
+
+    def __iter__(self):
+        ia = indices_uniformes(self.nA, self.total, self.gen)
+        ib = indices_uniformes(self.nB, self.total, self.gen)
+        return iter(zip(ia, ib))
+
+
 class Pares(torch.utils.data.Dataset):
-    """A segue a ordem embaralhada do sampler; B é sorteado (não pareado)."""
+    """Item = (imagem de A, imagem de B), indexado por um par (ia, ib) do AmostradorPares.
+
+    O comprimento é max(|A|, |B|); o amostrador garante que cada imagem de A (e de B) apareça
+    ~igualmente por época (as do domínio menor repetem de forma uniforme, sem favorecer as primeiras)."""
 
     def __init__(self, A, B, size):
         self.A, self.B, self.size = A, B, size
@@ -37,10 +69,9 @@ class Pares(torch.utils.data.Dataset):
     def __len__(self):
         return max(len(self.A), len(self.B))
 
-    def __getitem__(self, i):
-        a = self.A[i % len(self.A)]
-        b = self.B[random.randrange(len(self.B))]
-        return load_image(a, self.size), load_image(b, self.size)
+    def __getitem__(self, idx):
+        ia, ib = idx
+        return load_image(self.A[ia], self.size), load_image(self.B[ib], self.size)
 
 
 class Pool:
@@ -87,6 +118,12 @@ def salvar_atomico(obj, path):
     tmp = path.with_name(path.name + ".tmp")
     torch.save(obj, tmp)
     os.replace(tmp, path)
+
+
+def carregar(obj, estado):
+    """load_state_dict, ignorando state dict vazio (scaler de checkpoint treinado com --no-amp)."""
+    if estado or not isinstance(obj, torch.amp.GradScaler):
+        obj.load_state_dict(estado)
 
 
 def main(argv=None):
@@ -159,7 +196,7 @@ def main(argv=None):
     if args.resume:
         ck = torch.load(last, map_location=dev, weights_only=True)
         for k, net in (("G_AB", G_AB), ("G_BA", G_BA), ("D_A", D_A), ("D_B", D_B), ("opt_G", opt_G), ("opt_D", opt_D), ("scaler", scaler)):
-            net.load_state_dict(ck[k])
+            carregar(net, ck[k])
         ini = ck["epoca"] + 1
         podar_csv(run / "perdas.csv", COLS_PERDAS, ck["epoca"])
         podar_csv(run / "epocas.csv", COLS_EPOCAS, ck["epoca"])
@@ -174,7 +211,7 @@ def main(argv=None):
     ds = Pares(treino["A"], treino["B"], args.size)
     gen = torch.Generator().manual_seed(args.seed + ini)
     loader = torch.utils.data.DataLoader(
-        ds, batch_size=1, shuffle=True, num_workers=args.workers, generator=gen,
+        ds, batch_size=1, sampler=AmostradorPares(len(ds.A), len(ds.B), gen), num_workers=args.workers,
         pin_memory=cuda, persistent_workers=args.workers > 0)
     pool_A, pool_B = Pool(), Pool()
     ac = lambda: torch.autocast(dev.type, enabled=amp)  # noqa: E731

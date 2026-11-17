@@ -8,6 +8,7 @@ import json
 import math
 import subprocess
 import time
+import unicodedata
 import urllib.request
 from pathlib import Path
 
@@ -50,7 +51,7 @@ def resumo(run, parado_min):
             problema = "perda NaN/inf"
         idade = (time.time() - (run / "perdas.csv").stat().st_mtime) / 60
         if idade > parado_min:  # processo morto, travado ou PC suspenso
-            problema = f"sem progresso há {idade:.0f} min"
+            problema = f"sem progresso ha {idade:.0f} min"
     if eps:
         seg = sum(float(e["segundos"]) for e in eps[-3:]) / len(eps[-3:])
         linhas.append(f"{seg / 60:.1f} min/época (últimas 3) | faltam {(total - feitas) * seg / 3600:.1f} h até a época {total}")
@@ -62,8 +63,9 @@ def enviar(topico, titulo, msg, prioridade="default", tags="chart_with_upwards_t
     print(f"[{time.strftime('%H:%M')}] {titulo}\n{msg}\n", flush=True)
     if not topico:
         return
+    titulo_ascii = unicodedata.normalize("NFKD", titulo).encode("ascii", "ignore").decode("ascii")  # cabeçalhos HTTP só ASCII
     req = urllib.request.Request(f"https://ntfy.sh/{topico}", data=msg.encode("utf-8"),
-                                 headers={"Title": titulo, "Priority": prioridade, "Tags": tags})  # cabeçalhos só ASCII
+                                 headers={"Title": titulo_ascii, "Priority": prioridade, "Tags": tags})
     try:
         urllib.request.urlopen(req, timeout=15).close()
     except OSError as e:

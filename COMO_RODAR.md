@@ -1,38 +1,42 @@
 # Como rodar o treino (PC Windows, RTX 2060)
 
-Tudo em **PowerShell**. Rode na ordem. Não precisa instalar Python nem CUDA Toolkit: o `uv sync` baixa o Python 3.12 e o torch com CUDA 12.6. Só o driver NVIDIA é necessário.
+Tudo em **PowerShell**. O treino roda **nesta máquina** (Windows, RTX 2060 6 GB). O repositório já está clonado em `<pasta do projeto no OneDrive>` e as dependências já estão instaladas (`uv sync` feito), então as etapas de clonar e instalar foram puladas. Não precisa instalar Python nem CUDA Toolkit: o `uv` já baixou o Python 3.12 e o torch com CUDA 12.6. Só o driver NVIDIA é necessário.
+
+> **ATENÇÃO 1: não treine dentro do OneDrive.** O repositório está dentro do OneDrive, que sincroniza `runs/*.csv` e `last.pt` enquanto o treino escreve neles. Isso trava o arquivo (`PermissionError`) e pode derrubar o treino ou corromper o `last.pt`. Antes de treinar, faça **uma** destas duas coisas:
+>
+> - **Recomendado:** copiar/mover o projeto para fora do OneDrive, por exemplo `C:\cyclegan-mapas-satelite`, e rodar tudo de lá:
+>
+>   ```powershell
+>   Copy-Item -Recurse "<pasta do projeto no OneDrive>" C:\cyclegan-mapas-satelite
+>   cd C:\cyclegan-mapas-satelite
+>   uv sync
+>   ```
+>
+> - **Alternativa:** pausar a sincronização do OneDrive (ícone da nuvem na barra de tarefas > Ajuda e configurações > **Pausar sincronização**) durante todo o treino, e retomá-la só depois de parar o treino.
+>
+> Os comandos abaixo valem para qualquer um dos dois caminhos; rode-os a partir da pasta do projeto.
+
+> **ATENÇÃO 2: feche jogos e launchers antes do treino.** GTA, Steam e Epic Games abertos (mesmo só nos launchers) ocupam cerca de **4,8 GB dos 6 GB de VRAM**, e o treino precisa de ~5 GB. Feche tudo e confira com `nvidia-smi` que sobra praticamente toda a VRAM livre antes de começar.
 
 ## 1. Pré-requisitos (uma vez)
+
+Já instalados nesta máquina; só confira:
 
 ```powershell
 nvidia-smi                      # deve mostrar a RTX 2060 e a versão do driver
 git --version
-git config user.name            # se vazio: git config --global user.name "Seu Nome"
-git config user.email           # se vazio: git config --global user.email "voce@exemplo.com"
-powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"
-```
-
-Feche e abra o PowerShell depois de instalar o uv e confira:
-
-```powershell
 uv --version
 ```
 
-Para o `git push` funcionar, é preciso estar logado no GitHub (Git Credential Manager abre o navegador no primeiro push; ou `gh auth login`).
+Para o `git push` funcionar, é preciso estar logado no GitHub (Git Credential Manager abre o navegador no primeiro push; ou `gh auth login`). Se `git config user.name` / `user.email` estiverem vazios, configure-os com `git config --global`.
 
-## 2. Clonar (caminho sem espaços)
+## 2. Repositório
 
-```powershell
-cd C:\
-git clone https://github.com/<usuario>/cyclegan-mapas-satelite.git
-cd C:\cyclegan-mapas-satelite
-```
-
-Troque `<usuario>` pelo dono do repositório. Se já clonou antes: `git pull`.
+Já clonado (pule `git clone` e `uv sync`). Se for atualizar: `git pull`. Se mover o projeto para fora do OneDrive (aviso acima), rode `uv sync` uma vez na nova pasta.
 
 ## 3. Copiar os dados
 
-O `dados.zip` (553 MB) **não está no git**. Copie por pendrive/Drive para `C:\cyclegan-mapas-satelite\dados.zip` e extraia:
+O `dados.zip` (553 MB) **não está no git**. Copie por pendrive/Drive para a pasta do projeto (`dados.zip`) e extraia:
 
 ```powershell
 Expand-Archive dados.zip -DestinationPath data
@@ -51,10 +55,11 @@ Conferência de contagem (esperado: 6099, 6586, 1056, 947):
 foreach ($d in "trainA","trainB","testA","testB") { "$d : " + (Get-ChildItem data\$d).Count }
 ```
 
-## 4. Ambiente e teste da GPU
+## 4. Teste da GPU
+
+O ambiente já está instalado; só confirme que o torch enxerga a GPU:
 
 ```powershell
-uv sync
 uv run python -c "import torch; print(torch.cuda.is_available(), torch.cuda.get_device_name(0))"
 ```
 
@@ -101,7 +106,8 @@ Também:
 
 - Windows Update: Configurações > Windows Update > **Pausar atualizações**.
 - Mantenha o PC na tomada e o terminal **aberto** (não feche a janela, não faça logoff).
-- Feche navegador e jogos para sobrar VRAM.
+- Feche navegador, jogos e launchers (GTA, Steam, Epic) para sobrar VRAM: eles ocupam ~4,8 GB dos 6 GB.
+- Confirme que o projeto está **fora do OneDrive** (ou que a sincronização está pausada).
 
 Para reverter depois (ex.: 30 minutos):
 
@@ -127,7 +133,7 @@ O agendamento de LR é **fixo**: constante até a época 50, depois cai linearme
 - Valores típicos de `D_A` e `D_B` no LSGAN ficam abaixo de ~0,5. `D` colado em 0 por muitas épocas, com `G_adv` subindo sem parar, é sinal de alerta (o D está ganhando demais).
 - `cyc_A` e `cyc_B` devem **cair** nas primeiras épocas.
 
-**Não abra os CSV no Excel durante o treino** (o Windows trava o arquivo e o `PermissionError` derruba o treino). Mantenha a pasta do repositório **fora do OneDrive** ou de qualquer pasta sincronizada pelo mesmo motivo. `Get-Content -Tail` é seguro.
+**Não abra os CSV no Excel durante o treino** (o Windows trava o arquivo e o `PermissionError` derruba o treino). Pelo mesmo motivo, rode o treino com o projeto **fora do OneDrive** (ou com a sincronização pausada), como no aviso do início deste guia. `Get-Content -Tail` é seguro.
 
 ### Onde ver o progresso
 
@@ -185,11 +191,11 @@ Como `--decay-start 50` é maior que `--epochs 20`, o LR fica **constante** nas 
 
 O `monitor.py` roda num **segundo terminal**, com o treino já iniciado, e manda uma mensagem para o celular a cada 30 min: épocas concluídas, época e iteração atuais, perdas, min/época, horas restantes e temperatura/VRAM da GPU. Ele também alerta **na hora** se o treino travar (10 min sem progresso), se as perdas virarem NaN ou quando o treino terminar.
 
-1. No celular, instale o app **ntfy** (Android/iOS) e assine um tópico com um nome longo e aleatório, por exemplo `ganmapas-x7k2q9w4m1` (quem souber o nome consegue ler as mensagens, então não use algo adivinhável).
+1. No celular, instale o app **ntfy** (Android/iOS) e assine um tópico com um nome longo e aleatório, por exemplo `<SEU-TOPICO-ALEATORIO>` (quem souber o nome consegue ler as mensagens, então não use algo adivinhável).
 2. No PC, em outro terminal na pasta do projeto:
 
 ```powershell
-uv run python monitor.py --run principal --topic ganmapas-x7k2q9w4m1
+uv run python monitor.py --run principal --topic <SEU-TOPICO-ALEATORIO>
 ```
 
 Na primeira execução chega uma mensagem na hora, o que confirma que o celular está recebendo. Sem `--topic`, ele só imprime no terminal. Use `--every 15` para mudar o intervalo e `--once` para testar.
@@ -205,7 +211,7 @@ Se as mensagens pararem de chegar sem nenhum alerta, o PC suspendeu, caiu a inte
 - Se o it/s do teste de velocidade for < 1, está rodando em CPU.
 
 **CUDA out of memory**
-- Feche outros programas que usam a GPU (navegador, jogos, OBS). Veja o uso em `nvidia-smi`.
+- Feche outros programas que usam a GPU (navegador, jogos e launchers como GTA/Steam/Epic, que sozinhos ocupam ~4,8 GB, OBS). Veja o uso em `nvidia-smi`.
 - Reinicie o terminal e tente de novo. O treino usa batch 1 e AMP; se persistir, anote a VRAM máxima do teste de velocidade e avise o grupo.
 
 **Erro de multiprocessing / DataLoader / `BrokenPipeError`**
