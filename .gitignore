@@ -10,6 +10,8 @@ Trabalho Implementacao GAN.pdf
 
 # Pesos: grandes demais para o git; ficam só no PC
 runs/**/*.pt
+# exceção: snapshot final dos geradores (44 MB), para avaliar sem retreinar
+!runs/principal/G_epoca_100.pt
 runs/**/*.pt.tmp
 
 .venv/
