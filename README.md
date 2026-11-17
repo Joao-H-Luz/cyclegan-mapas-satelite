@@ -83,7 +83,9 @@ runs/<run>/         saída de cada treino: config.json, perdas.csv, epocas.csv,
 data/               (fora do git) trainA/ trainB/ testA/ testB/
 ```
 
-Os pesos (`*.pt`) ficam fora do git.
+Os pesos (`*.pt`) ficam fora do git, exceto o snapshot final dos geradores, `runs/principal/G_epoca_100.pt` (44 MB), que permite rodar o `avaliar.py` sem retreinar.
+
+Os slides da apresentação estão em `apresentacao.html` (abre offline no navegador; ← → navegam, N mostra as notas, F tela cheia).
 
 ## Resultados e análise
 
