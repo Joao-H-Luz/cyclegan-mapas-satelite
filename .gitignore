@@ -17,3 +17,4 @@ runs/**/*.pt.tmp
 .venv/
 __pycache__/
 .pytest_cache/
+runs/*/teste/

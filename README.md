@@ -50,7 +50,7 @@ Seguimos a CycleGAN original (Zhu et al., 2017). Tudo está em PyTorch, sem depe
 
 - **Adversarial LSGAN** (erro quadrático contra 1/0, sem sigmoid). Gradientes mais estáveis que a entropia cruzada e sem saturação; é a escolha do paper original. A perda do D é multiplicada por 0,5 para que ele aprenda mais devagar que o G.
 - **Consistência cíclica L1, λ = 10.** `a → G_AB → G_BA ≈ a` (e o análogo para B). É o que permite treinar sem pares: obriga a tradução a manter o conteúdo. L1 gera menos borrão que L2.
-- **Identity desligada no treino principal** (`λ_id = 0`). Nos mapas, a identity forçaria `G_AB(b) ≈ b`, o que não é natural aqui (um gerador de B a partir de B). Ela serve sobretudo para preservar cor, e o domínio de satélite já tem paleta própria. Vamos testá-la em uma **ablação** curta (`λ_id = 0,5`) para medir o efeito.
+- **Identity desligada no treino principal** (`λ_id = 0`). Nos mapas, a identity forçaria `G_AB(b) ≈ b`, o que não é natural aqui (um gerador de B a partir de B). Ela serve sobretudo para preservar cor, e o domínio de satélite já tem paleta própria. O efeito de ligá-la (`λ_id = 0,5`) **não foi medido**: a ablação não foi treinada e fica como trabalho futuro.
 - **Image pool** de 50 imagens falsas para o D, que estabiliza o treino (Shrivastava et al., 2017).
 
 ### Otimização
@@ -89,7 +89,7 @@ Os slides da apresentação estão em `apresentacao.html` (abre offline no naveg
 
 ## Resultados e análise
 
-Treino principal: 100 épocas, uma única execução. Os arquivos estão em `runs/principal/`. Onde o texto diz _pendente_, a métrica ou o teste ainda não foi rodado; o comando que gera cada um está indicado.
+Treino principal: 100 épocas, uma única execução. Os arquivos estão em `runs/principal/`. As métricas e os testes abaixo foram calculados com o snapshot final (`G_epoca_100.pt`) sobre o conjunto de teste inteiro: 1056 imagens de A e 947 de B.
 
 ### Treino
 
@@ -100,7 +100,11 @@ Treino principal: 100 épocas, uma única execução. Os arquivos estão em `run
 - **VRAM de pico:** 5,0 GB.
 - O treino foi pausado e retomado várias vezes (inclusive após uma queda de energia) sem alterar o agendamento do LR, porque o LR de cada época é calculado direto do número da época.
 
-As figuras `curvas_adversarial.png` e `curvas_ciclica.png` ainda não foram geradas (`uv run python analyze.py curvas principal` as gera a partir de `runs/principal/`). Os valores abaixo vêm de `runs/principal/epocas.csv` (média por época).
+![Curvas adversariais](runs/principal/curvas_adversarial.png)
+
+![Curva cíclica](runs/principal/curvas_ciclica.png)
+
+As figuras saem de `uv run python analyze.py curvas runs/principal`. Os valores abaixo vêm de `runs/principal/epocas.csv` (média por época).
 
 | Época | G_adv A→B | G_adv B→A | cyc_A | cyc_B | D_A | D_B |
 |---|---|---|---|---|---|---|
@@ -134,9 +138,31 @@ São 4 + 4 imagens fixas do **conjunto de teste** (nunca vistas no treino), trad
 - **A→B:** na época 1 tudo é verde-escuro com manchas; na época 10, tom marrom-oliva; da época 50 em diante, cores mais calmas e textura de satélite. A estrutura (costa, lagoa, quadras, rios) aparece cedo e quase não muda; o que evolui é a cor e a textura. A reconstrução da época 100 é fiel nos quatro casos.
 - **B→A:** o estilo de mapa (papel creme, tinta, hachura) aparece já na época 10. Na época 5 as quatro saídas têm faixas horizontais coloridas, que somem depois. Na época 100 surgem manchas rosa-magenta que não existiam nas épocas 50 e 75.
 
-### Casos bons e ruins
+### Métricas no conjunto de teste
 
-Dois bons e dois ruins em cada sentido, todos do conjunto de teste (a numeração segue a ordem das imagens fixas em `runs/principal/config.json`). A escolha é visual, sobre as 4 + 4 imagens fixas. A seleção sobre o teste inteiro está _pendente_: `uv run python avaliar.py inferir principal` e depois `uv run python avaliar.py casos principal`.
+Calculadas com `uv run python avaliar.py inferir principal` (G final, CPU). A "cíclica" é a L1 entre a imagem original e a reconstruída, na escala [-1, 1]. Não existe par de referência para a tradução em si, então essas métricas medem só a reconstrução, não o realismo.
+
+| Sentido | Imagens de teste | Cíclica L1 | PSNR | SSIM |
+|---|---|---|---|---|
+| A→B→A | 1056 | 0,1094 | 22,26 dB | 0,8205 |
+| B→A→B | 947 | 0,1125 | 23,41 dB | 0,8199 |
+
+Os valores por imagem estão em `runs/principal/metricas_teste.csv`. A cíclica no teste (0,109 e 0,113) é maior que a do fim do treino (0,092 e 0,078, médias das janelas de treino), mas a comparação é só indicativa. Em B, 20 das 21 regiões de teste também aparecem no treino (em tiles diferentes), então o número de B é otimista.
+
+### Casos bons e ruins (teste inteiro)
+
+![Casos A→B](runs/principal/casos_A2B.jpg)
+
+![Casos B→A](runs/principal/casos_B2A.jpg)
+
+As figuras mostram os 4 melhores e os 4 piores de cada sentido pela cíclica L1, sobre todo o teste (`uv run python avaliar.py casos principal`). Padrões vistos:
+
+- **A→B, melhores (L1 0,034–0,043):** mapas cadastrais de papel creme com ruas e quadras, tradução em verde de satélite. O texto ("207", "MICHIGAN", "GEORGIA", "453") continua legível na tradução (falha 1).
+- **A→B, piores (L1 0,308–0,327):** mapas coloridos ou ilustrados (laranja, azul, desenho de campus). A reconstrução troca a cor: um mapa cinza-esverdeado volta azul-claro, um papel branco volta amarelo-laranja. Aqui a informação de cor não passou pelo ciclo, o que não é o que a esteganografia prevê.
+- **B→A, melhores (L1 0,046–0,051):** mata e campos verdes (Ozarks, Shenandoah, St. Louis, White Mountains). A tradução vira papel quase vazio com poucos traços, e mesmo assim a reconstrução devolve a textura de mata (falha 3).
+- **B→A, piores (L1 0,289–0,417):** neve das Cascades (3 dos 4 piores) e um trecho de lago com píer em Milwaukee. Neve não tem equivalente em mapa, e a reconstrução fica cinza-bege.
+
+Abaixo, a leitura de 8 imagens fixas, com julgamento visual.
 
 **Mapa → satélite (A→B)**
 
@@ -175,10 +201,21 @@ O pior caso é o bairro muito arborizado: copa de árvore não tem equivalente e
 
 **Falha 3: reconstruções quase perfeitas a partir de traduções ruins (hipótese de esteganografia).**
 
-- *Evidência:* nos 8 casos de teste a reconstrução é fiel, mesmo quando a tradução falha. O bairro arborizado vira quase papel vazio no mapa, mas a reconstrução devolve as copas das árvores.
+- *Evidência:* nos 8 casos fixos a reconstrução é fiel, mesmo quando a tradução falha. O bairro arborizado vira quase papel vazio no mapa, mas a reconstrução devolve as copas das árvores. No teste inteiro, os melhores casos de B→A repetem isso: mata vira papel quase vazio e volta como mata (cíclica L1 0,046–0,051).
 - *Hipótese:* esteganografia (Chu et al., 2017). O gerador esconde a imagem original em sinais de baixa amplitude, quase invisíveis, e o outro gerador os decodifica. A perda cíclica cai sem a tradução ficar fiel. Uma tradução que descarta as copas não deveria permitir reconstruí-las; se a reconstrução volta, a informação passou por algum canal escondido.
 - *Como testar:* somar um ruído pequeno (σ = 0,02 e 0,05) à tradução antes do segundo gerador. Se a reconstrução piorar muito mais do que o ruído explica, há informação escondida. O teste está implementado em `avaliar.py`.
-- *Resultado:* _pendente_. Gerar com `uv run python avaliar.py esteganografia principal`.
+- *Resultado* (50 imagens de teste por domínio, `uv run python avaliar.py esteganografia principal`):
+
+| Sentido | σ | Cíclica L1 sem ruído | com ruído | Aumento | Razão (aumento / ruído) | Sensibilidade |
+|---|---|---|---|---|---|---|
+| A→B→A | 0,02 | 0,1160 | 0,1301 | 0,0140 | 0,88 | 2,93 |
+| A→B→A | 0,05 | 0,1160 | 0,1940 | 0,0780 | 1,96 | 3,62 |
+| B→A→B | 0,02 | 0,1079 | 0,1093 | 0,0014 | 0,09 | 0,83 |
+| B→A→B | 0,05 | 0,1079 | 0,1193 | 0,0114 | 0,29 | 1,00 |
+
+A sensibilidade é a L1 entre a reconstrução com ruído e a sem ruído, dividida pela L1 do ruído; o limiar do script é 3,0.
+
+- *Leitura:* o resultado é **misto e só confirma a hipótese em parte**. Em A→B→A, o G_BA amplifica o ruído (sensibilidade 2,93 e 3,62, razão chegando a 1,96 com σ = 0,05), o que combina com informação em alta frequência escondida na tradução. Em B→A→B não há amplificação (sensibilidade 0,83 e 1,00; o aumento fica abaixo do ruído). Nesse sentido o teste **não** encontrou esteganografia de alta frequência, embora os melhores casos reconstruam mata a partir de papel quase vazio. Uma possível explicação, não testada, é que a informação viaje em variações suaves de cor, que um ruído gaussiano independente por pixel não destrói. Com 50 imagens e dois valores de σ, o teste é um indício, não uma prova.
 
 **Falha 4: instabilidades.** O treino nunca colapsou: a perda cíclica caiu em todas as fases e nenhuma perda virou NaN. Houve oscilações pontuais, das quais ele se recuperou.
 
@@ -192,7 +229,8 @@ Nas épocas 83 e 84 a média de D_A chegou a 0,002, ou seja, o discriminador de 
 
 ### Limitações
 
-- **Avaliação:** a análise visual usa 4 + 4 imagens fixas de teste. As métricas no conjunto de teste inteiro (cíclica L1, PSNR, SSIM) estão _pendentes_: `uv run python avaliar.py inferir principal`.
+- **Avaliação:** as métricas (cíclica L1, PSNR, SSIM) medem só a reconstrução. Não há referência para o realismo da tradução, e não calculamos FID nem fizemos avaliação humana. A leitura do realismo é visual.
+- **Esteganografia:** o teste usa 50 imagens por domínio, ruído gaussiano e dois valores de σ. Ele não exclui informação escondida em baixa frequência.
 - **Experimentos:** uma única execução, com seed 42 e batch 1, sem busca de hiperparâmetros. A ablação com identity loss não foi treinada.
 - **Dados:** domínios desalinhados (mapas de várias regiões e escalas contra cidades dos EUA em zooms 14–16). Parte das diferenças pode vir disso, não do modelo; por exemplo, o mar virando textura de mata.
 - As conclusões sobre casos bons e ruins vêm de 8 imagens. Para afirmar padrões gerais seria preciso olhar o conjunto de teste inteiro e ter métricas.
@@ -203,7 +241,7 @@ A CycleGAN aprendeu o estilo e a estrutura, mas não aprende a inventar o que fa
 
 - **Satélite → mapa funciona melhor:** descartar detalhe é fácil, e ruas e quadras viram traço de mapa convincente.
 - **Mapa → satélite fica limitado:** é preciso inventar textura que o mapa não tem, e o discriminador de satélite vence.
-- **Perda cíclica baixa não basta:** reconstruções perfeitas a partir de traduções ruins sugerem informação escondida (a confirmar com o teste de esteganografia).
+- **Perda cíclica baixa não basta:** reconstruções boas a partir de traduções ruins sugerem informação escondida. O teste de ruído confirma isso em A→B→A e não confirma em B→A→B.
 
 Próximos passos: ablação com identity loss, máscara de texto e mapas e satélites da mesma região e escala.
 

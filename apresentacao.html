@@ -432,10 +432,10 @@ table.data { font-size: 26px; color: #1F2A33; width: 100%; }
 <div class="ev">
 <p class="ev-k">COMO TESTAR</p>
 <p class="ev-t">Somar um ruído pequeno (σ = 0,02 e 0,05) à tradução antes do segundo gerador. Se a reconstrução piorar muito mais do que o ruído explica, há informação escondida.</p>
-<p class="ev-t">Resultado: [a preencher]</p>
+<p class="ev-t">Resultado: A→B→A amplifica o ruído (sensibilidade 2,93 e 3,62; limiar 3,0). B→A→B não (0,83 e 1,00). Confirma só em parte.</p>
 </div>
 </div>
-<aside>Isso conecta com a curva cíclica: ela cai até o fim, mas não prova que a tradução é boa. Uma tradução que descarta as copas não deveria permitir reconstruí-las; se a reconstrução volta, a informação passou por algum canal escondido. O teste de ruído já está implementado no avaliar.py (subcomando esteganografia).</aside>
+<aside>Isso conecta com a curva cíclica: ela cai até o fim, mas não prova que a tradução é boa. Uma tradução que descarta as copas não deveria permitir reconstruí-las; se a reconstrução volta, a informação passou por algum canal escondido. O teste de ruído está no avaliar.py (subcomando esteganografia). Resultado honesto: misto. Em A→B→A, a cíclica sobe de 0,116 para 0,130 (σ = 0,02) e 0,194 (σ = 0,05), mais do que o ruído sozinho explicaria no segundo caso (razão 1,96). Em B→A→B sobe pouco (0,108 para 0,109 e 0,119). Mesmo assim, os melhores casos de B→A reconstroem mata a partir de papel quase vazio. Explicação possível, não testada: a informação viaja em variações suaves de cor, que ruído gaussiano por pixel não destrói. Nos piores casos de A→B a cor da reconstrução muda (cinza-esverdeado volta azul-claro), então ali a informação de cor foi de fato perdida. O teste usa só 50 imagens e dois valores de σ: é indício, não prova.</aside>
 </section>
 <section id="analise-instab">
 <div class="head">
@@ -459,7 +459,7 @@ table.data { font-size: 26px; color: #1F2A33; width: 100%; }
 <div class="cards">
 <div class="card">
 <h3 class="card-title">Avaliação</h3>
-<p class="card-text">A análise visual usa 4 + 4 imagens fixas de teste. Métricas no conjunto de teste inteiro (cíclica L1, PSNR, SSIM): [a preencher].</p>
+<p class="card-text">A análise visual usa 4 + 4 imagens fixas de teste. No teste inteiro: A→B→A (1056 imagens) cíclica L1 0,109, PSNR 22,26 dB, SSIM 0,821; B→A→B (947 imagens) cíclica L1 0,113, PSNR 23,41 dB, SSIM 0,820. Medem só a reconstrução, não o realismo.</p>
 </div>
 <div class="card">
 <h3 class="card-title">Experimentos</h3>
@@ -470,7 +470,7 @@ table.data { font-size: 26px; color: #1F2A33; width: 100%; }
 <p class="card-text">Domínios desalinhados: mapas de várias regiões e escalas contra cidades dos EUA em zooms 14–16. Parte das diferenças pode vir disso, não do modelo.</p>
 </div>
 </div>
-<aside>Ser honesto sobre o que falta: as conclusões sobre casos bons e ruins vêm de 8 imagens; para afirmar padrões gerais seria preciso olhar o conjunto de teste inteiro e ter métricas. A diferença de escala e de região entre os domínios é uma explicação alternativa para parte das falhas, por exemplo o mar virando textura de mata.</aside>
+<aside>Ser honesto sobre o que falta: as métricas do teste inteiro só medem a reconstrução; não calculamos FID nem fizemos avaliação humana, então o realismo é julgado a olho. Em B, 20 das 21 regiões de teste também aparecem no treino (em tiles diferentes), então o número de B é otimista; só Baltimore é inédita. A diferença de escala e de região entre os domínios é uma explicação alternativa para parte das falhas, por exemplo o mar virando textura de mata.</aside>
 </section>
 <section id="conclusao" class="dark">
 <div class="head">

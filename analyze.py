@@ -25,7 +25,8 @@ def ler_csv(caminho):
 
 
 def fonte(tamanho):
-    return ImageFont.load_default(size=tamanho)
+    # DejaVuSans vem com o matplotlib e tem acentos; a fonte padrão do PIL não tem
+    return ImageFont.truetype(str(Path(matplotlib.get_data_path()) / "fonts/ttf/DejaVuSans.ttf"), tamanho)
 
 
 # ---------- dataset ----------
