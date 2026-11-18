@@ -30,9 +30,45 @@ Em B, 20 das 21 regiões do teste (785 de 947 imagens) também aparecem no trein
 
 ### Origem dos dados
 
-- **Domínio A:** David Rumsey Map Collection.
-- **Domínio B:** USGS National Map (ortoimagens).
-- **TODO (grupo):** descrever como os dados foram coletados (ferramenta ou script, critério de escolha das cidades e dos mapas, como foram feitos os recortes 256×256, filtros e limpeza, licença de uso).
+Os dois domínios foram coletados com scripts próprios, que estão em [`coleta/`](coleta/). Os dados ficam em `<saída>/trainA`, `testA`, `trainB` e `testB`.
+
+**Domínio A: David Rumsey Map Collection** ([`coleta/mapas.py`](coleta/mapas.py))
+
+1. **Busca.** A API de busca do acervo é consultada com 12 termos que trazem mapas com ruas, lotes e terreno: `city plan`, `town`, `street map`, `real estate atlas`, `ward`, `plat`, `topographic`, `survey`, `harbor`, `environs`, `county atlas` e `Sanborn`. São 60 mapas por termo, 720 no total.
+2. **Filtro por metadado.** Ficam só itens catalogados como mapa e datados de 1700 a 1950. Saem capas, páginas de texto, índices, legendas, vistas em perspectiva e mapas de mundo ou de continente, cuja escala é pequena demais para comparar com satélite.
+3. **Recortes.** De cada mapa saem até 12 recortes aleatórios de 1024 × 1024 px, tirados da imagem em resolução original pelo serviço IIIF do acervo e reduzidos para 256 × 256. Uma margem de 7% fica de fora para evitar molduras. Recortar em vez de reduzir o mapa inteiro deixa a escala próxima à de um tile de satélite, com quarteirões visíveis. Resultado: 7.963 recortes.
+4. **Filtro por imagem.** Saem recortes de papel liso, margens e molduras: pouco desvio padrão, pouca borda forte ou mais de 30% de blocos 32 × 32 uniformes.
+5. **Limpeza com CLIP** ([`coleta/limpar_mapas.py`](coleta/limpar_mapas.py)). Cada recorte é comparado, em classificação zero-shot (CLIP ViT-B/16), com descrições de "pedaço de mapa" e de ruído: ilustração, gravura, rosa dos ventos, cartucho de título, legenda, texto, tabela e mapa pictórico. Sai o recorte com score de mapa abaixo de 0,6. O mapa inteiro sai quando mais de 25% dos seus recortes são reprovados, o que eliminou sobretudo mapas pictóricos com desenhos. Os limiares foram escolhidos olhando amostras de cada faixa de score. Saíram 808 recortes, que foram movidos para uma pasta à parte, não apagados.
+
+Resultado: **7.155 recortes de 650 mapas**. A divisão treino/teste é feita **por mapa**: 15% dos mapas vão inteiros para o teste.
+
+Licença: [CC BY-NC-SA 3.0](https://creativecommons.org/licenses/by-nc-sa/3.0/). Crédito: *David Rumsey Map Collection, David Rumsey Map Center, Stanford University Libraries*.
+
+**Domínio B: USGS The National Map** ([`coleta/satelite.py`](coleta/satelite.py))
+
+1. **Fonte.** Serviço de tiles `USGSImageryOnly`, com ortoimagens NAIP de ~1 m por pixel, sem chave de API.
+2. **Regiões.** São 52 no total:
+   - 36 cidades dos EUA (Boston, Nova York, Washington, Chicago, São Francisco, entre outras);
+   - 16 áreas naturais (Rochosas, Apalaches, Cascades, Ozarks, Cape Cod, baía de Chesapeake, lavouras de Iowa, entre outras), que correspondem aos mapas topográficos e às cartas costeiras de A.
+3. **Amostragem.** Os tiles de 256 × 256 são sorteados uniformemente num raio em torno de cada centro, nos zooms 14, 15 e 16 (17%, 41% e 42% dos tiles), para cobrir a variação de escala dos mapas. São 170 tiles por cidade e 140 por área natural, 8.360 no total.
+4. **Filtro.** Sai o tile sem cobertura (preto ou branco), só com água ou quase uniforme. Saíram 827.
+
+Resultado: **7.533 tiles**. A divisão treino/teste é feita **por bloco geográfico** (o tile-pai no zoom 11): tiles vizinhos ficam sempre no mesmo lado.
+
+Licença: domínio público (dados do governo dos EUA).
+
+**Fonte descartada.** A Library of Congress foi considerada no início, mas o loc.gov bloqueia acesso automatizado (HTTP 403 em qualquer requisição feita por script).
+
+**Como reproduzir.** A coleta não é determinística no domínio A, porque a busca do acervo muda com o tempo.
+
+```bash
+pip install requests numpy pillow            # mapas.py e satelite.py
+python coleta/mapas.py --out data            # ~35 min
+python coleta/satelite.py --out data         # ~10 min
+pip install torch transformers               # limpar_mapas.py
+python coleta/limpar_mapas.py --out data --dry-run   # só mostra quantos sairiam
+python coleta/limpar_mapas.py --out data
+```
 
 Os dados (≈ 553 MB) não ficam no repositório.
 
@@ -76,6 +112,7 @@ analyze.py          figuras e análises a partir de runs/
 avaliar.py          inferência no conjunto de teste, casos bons/ruins, métricas
                     e comparação da ablação (identity loss)
 monitor.py          acompanha o treino pelo celular (ntfy.sh), com alerta de travamento
+coleta/             scripts de coleta e limpeza dos dois domínios
 tests/              teste de fumaça (CPU)
 figuras/            figuras gerais (dataset)
 runs/<run>/         saída de cada treino: config.json, perdas.csv, epocas.csv,

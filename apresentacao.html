@@ -164,9 +164,12 @@ table.data { font-size: 26px; color: #1F2A33; width: 100%; }
 <div class="cards">
 <div class="card">
 <h3 class="card-title">Como foi coletado</h3>
-<p class="card-text">[Grupo: ferramenta ou script usado para baixar os mapas e as ortoimagens]</p>
-<p class="card-text">[Critério de escolha das cidades e dos mapas]</p>
-<p class="card-text">[Como os recortes 256 × 256 foram feitos, filtros, limpeza e licença de uso]</p>
+<ul class="list" style="font-size:27px;line-height:1.38;margin:0;padding-left:30px">
+<li><b>A:</b> API do acervo David Rumsey, 12 termos (city plan, Sanborn, plat, topographic…): 720 mapas de 1700 a 1950</li>
+<li>Recortes de 1024 px na resolução original (IIIF), reduzidos a 256 px; filtros de metadado e de imagem e limpeza com CLIP zero-shot (−808): 7.155 recortes de 650 mapas, CC BY-NC-SA 3.0</li>
+<li><b>B:</b> ortoimagens NAIP do USGS (~1 m/pixel, domínio público): 36 cidades dos EUA e 16 áreas naturais, zooms 14–16; 8.360 tiles → 7.533 após o filtro</li>
+<li>Scripts próprios em Python, na pasta <code>coleta/</code></li>
+</ul>
 </div>
 <div class="card">
 <h3 class="card-title">Pré-processamento</h3>
@@ -178,7 +181,7 @@ table.data { font-size: 26px; color: #1F2A33; width: 100%; }
 </ul>
 </div>
 </div>
-<aside>Preencher o card da esquerda com a coleta real; o enunciado pede explicitamente como os dados foram coletados. Sobre a ausência de augmentation: flip horizontal criaria mapas com texto espelhado, que não existem no domínio; e as imagens já vêm recortadas em 256 × 256.</aside>
+<aside>Mapas: a busca usa a API do acervo David Rumsey e os recortes saem da imagem em resolução original pelo serviço IIIF; reduzir o mapa inteiro a 256 px daria uma escala muito mais distante que a do satélite. A limpeza com CLIP compara cada recorte com descrições de pedaço de mapa e de ruído (corte 0,6; o mapa inteiro sai se mais de 25% dos recortes forem reprovados). A Library of Congress, considerada no início, bloqueia acesso automatizado (HTTP 403). Crédito: David Rumsey Map Collection, David Rumsey Map Center, Stanford University Libraries. Sobre a ausência de augmentation: flip horizontal criaria mapas com texto espelhado, que não existem no domínio; e as imagens já vêm recortadas em 256 × 256.</aside>
 </section>
 <section id="arquitetura">
 <div class="head">
