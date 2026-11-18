@@ -173,7 +173,7 @@ Abaixo, a leitura de 8 imagens fixas, com julgamento visual.
 | 3 | Ruim | Imagem lavada, relevo irreal; "CANAL" continua escrito. |
 | 4 | Bom | Rios e estradas preservados; parece foto aérea. |
 
-**Satélite → mapa (B→A)** (Providence, Baltimore em dois zooms e Sacramento, cidades fora do treino)
+**Satélite → mapa (B→A)** (Providence, Baltimore em dois zooms e Sacramento; só Baltimore é uma região que não aparece no treino, as outras têm outros tiles no treino)
 
 | Imagem | Julgamento | Por quê |
 |---|---|---|
