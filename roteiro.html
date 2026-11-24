@@ -1,0 +1,198 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Roteiro de falas: CycleGAN, mapas históricos ↔ satélite</title>
+<style>
+:root{--bg:#F6F1E7;--alt:#EDE5D3;--ink:#1F2A33;--mute:#5A6670;--line:#D9CFB8;--card:#FBF8F0;--p1:#0E9180;--p2:#B4532A;--p3:#3E5C9A}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:18px/1.65 "Public Sans",system-ui,sans-serif}
+h1,h2,h3{font-family:"EB Garamond",Georgia,serif;margin:0;line-height:1.2}
+.wrap{max-width:860px;margin:0 auto;padding:0 22px}
+header{background:var(--ink);color:var(--bg);padding:40px 0 30px}
+header h1{font-size:40px;font-weight:600}
+header p{margin:10px 0 0;color:#C9D3D6;font-size:16px}
+nav{position:sticky;top:0;z-index:5;background:var(--bg);border-bottom:1px solid var(--line)}
+nav .wrap{display:flex;gap:10px;padding-top:10px;padding-bottom:10px;flex-wrap:wrap}
+nav a{font-size:14px;font-weight:600;text-decoration:none;color:#fff;padding:5px 12px;border-radius:99px}
+.tempo{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:22px 0}
+.tempo div{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:10px 12px;font-size:14px;color:var(--mute)}
+.tempo b{display:block;font:600 24px "EB Garamond",serif;color:var(--ink)}
+.part{padding:36px 0 8px;border-top:6px solid var(--c)}
+.part h2{font-size:32px;color:var(--c)}
+.part .meta{font-size:14px;color:var(--mute);margin:4px 0 18px}
+.slide{background:var(--card);border:1px solid var(--line);border-left:5px solid var(--c);border-radius:10px;padding:16px 20px;margin:16px 0}
+.slide h3{font-size:22px}
+.slide .t{font-size:13px;color:var(--mute);letter-spacing:.06em;text-transform:uppercase;font-weight:700;margin-bottom:6px}
+.tela{font-size:14px;color:var(--mute);margin:8px 0;padding-left:10px;border-left:2px solid var(--line)}
+.fala p{margin:10px 0}
+.fala b{background:#FFF1B8;padding:0 3px;border-radius:3px}
+.passa{font-size:14.5px;color:var(--c);font-weight:600;margin:10px 0 0}
+.qa{background:var(--alt);padding:32px 0 44px;margin-top:34px}
+.qa h2{font-size:30px;margin-bottom:12px}
+.qa dt{font-weight:700;margin-top:14px}.qa dd{margin:2px 0 0}
+#p1{--c:var(--p1)}#p2{--c:var(--p2)}#p3{--c:var(--p3)}
+@media(max-width:640px){.tempo{grid-template-columns:1fr 1fr}}
+@media print{nav{display:none}.slide{break-inside:avoid}body{font-size:14.5px}header,nav a{-webkit-print-color-adjust:exact;print-color-adjust:exact}}
+</style>
+</head>
+<body>
+<header><div class="wrap">
+<h1>Roteiro de falas</h1>
+<p>CycleGAN: mapas históricos ↔ satélite · 12 slides · cerca de 10 min · 3 apresentadores. Trechos <b style="background:#FFF1B8;color:var(--ink);padding:0 3px;border-radius:3px">marcados</b> são os números e termos que não podem sair errados.</p>
+</div></header>
+
+<nav><div class="wrap">
+<a href="#p1" style="background:var(--p1)">Apresentador 1 · slides 1–4</a>
+<a href="#p2" style="background:var(--p2)">Apresentador 2 · slides 5–8</a>
+<a href="#p3" style="background:var(--p3)">Apresentador 3 · slides 9–12</a>
+<a href="#qa" style="background:var(--ink)">Perguntas prováveis</a>
+</div></nav>
+
+<div class="wrap">
+<div class="tempo">
+<div><b>~2:45</b>1 · problema, dados e modelo</div>
+<div><b>~3:20</b>2 · treino e resultados por época</div>
+<div><b>~4:00</b>3 · casos e análise crítica</div>
+<div><b>~10:00</b>total (o limite é 20 min)</div>
+</div>
+<p style="font-size:15px;color:var(--mute)">Ritmo de fala: cerca de 130 palavras por minuto. Quem for apresentar cada parte troca os nomes dos apresentadores como preferir. A análise crítica pesa 25% da nota, por isso a parte 3 é a mais longa.</p>
+</div>
+
+<!-- ===================== PARTE 1 ===================== -->
+<section class="part" id="p1"><div class="wrap">
+<h2>Apresentador 1 · Problema, dados e modelo</h2>
+<p class="meta">Slides 1 a 4 · cerca de 2 min 45 s</p>
+
+<div class="slide"><p class="t">Slide 1 · Capa · 0:20</p><h3>Mapas históricos ↔ satélite</h3>
+<div class="fala">
+<p>Boa tarde. Somos o João, o Vittor e o Marcelo, e vamos mostrar uma <b>CycleGAN treinada do zero</b> para traduzir mapas históricos em imagens de satélite e o caminho inverso, <b>sem nenhum par de treino</b>.</p>
+<p>Eu apresento o problema, os dados e o modelo. O segundo apresentador traz o treino e os resultados. O terceiro fecha com a análise crítica, que é onde o modelo mais nos ensinou.</p>
+</div></div>
+
+<div class="slide"><p class="t">Slide 2 · A tradução escolhida · 0:40</p><h3>Dois sentidos, sem nenhum par de treino</h3>
+<p class="tela">Na tela: dois cartões, A → B e B → A, e a caixa “Por que é interessante e difícil”.</p>
+<div class="fala">
+<p>Escolhemos duas traduções. De <b>A para B</b>: dado um recorte de mapa antigo, gerar como aquela região apareceria vista de cima. De <b>B para A</b>: dada uma foto aérea, desenhá-la no estilo de mapa antigo, com papel, traço de tinta, cor chapada e rótulos.</p>
+<p>É interessante porque os dois domínios mostram a mesma coisa: ruas, quadras, rios. Mas é difícil porque o mapa é uma abstração com texto, e a foto tem textura que o mapa não registra, como telhados, copas e sombras. Então a tradução <b>não é bijetiva</b>: um sentido precisa descartar informação e o outro precisa inventá-la. Guardem essa ideia, porque ela volta na análise.</p>
+<p>Esse par é o clássico do pix2pix, mas lá os dados são pareados. Aqui não são: um mapa do século XIX nunca tem a foto aérea correspondente. Essa proposta de domínios foi <b>validada com o professor</b> antes de coletarmos os dados.</p>
+</div></div>
+
+<div class="slide"><p class="t">Slide 3 · Dataset · 1:00</p><h3>Mapas históricos (A) e satélite (B), 256 × 256</h3>
+<p class="tela">Na tela: contagens por domínio, funil de coleta de A e de B, linha de pré-processamento.</p>
+<div class="fala">
+<p>Todas as imagens são JPEG 256 por 256. O <b>domínio A</b> tem 6.099 imagens de treino e 1.056 de teste, recortes de mapas da <b>David Rumsey Map Collection</b>. O <b>domínio B</b> tem 6.586 de treino e 947 de teste, ortoimagens aéreas do <b>USGS</b>.</p>
+<p>Coletamos com scripts próprios. Em A, buscamos na API do acervo com 12 termos, como city plan e Sanborn, e chegamos a <b>720 mapas</b>. Recortamos pedaços de 1024 pixels na resolução original e reduzimos a 256, para a escala ficar parecida com a de um tile de satélite. Depois aplicamos filtros e uma limpeza com <b>CLIP zero-shot</b>, e sobraram <b>7.155 recortes de 650 mapas</b>. Em B, baixamos tiles NAIP de cerca de 1 metro por pixel, de 36 cidades e 16 áreas naturais, nos zooms 14 a 16: <b>8.360 tiles, 7.533 depois do filtro</b>.</p>
+<p>Duas observações de honestidade. Em A, nenhum mapa do teste aparece no treino. Em B, <b>20 das 21 regiões do teste também estão no treino</b>, em tiles diferentes; só <b>Baltimore</b> é inédita. Então o teste de B é otimista. E não usamos data augmentation, porque o flip espelharia o texto dos mapas.</p>
+</div></div>
+
+<div class="slide"><p class="t">Slide 4 · Implementação · 0:45</p><h3>ResNet + PatchGAN, LSGAN e perda cíclica</h3>
+<p class="tela">Na tela: dois parágrafos curtos (gerador, discriminador) e a tabela de perdas.</p>
+<div class="fala">
+<p>Seguimos a CycleGAN original, implementada em PyTorch. O <b>gerador é uma ResNet de 9 blocos</b>: os blocos residuais preservam a estrutura, e o traçado das ruas precisa sobreviver à tradução. Usamos InstanceNorm porque funciona melhor com batch 1. O <b>discriminador é um PatchGAN 70 por 70</b>: ele julga textura local, que é o que importa para estilo.</p>
+<p>Nas perdas: <b>adversarial LSGAN</b>, com gradientes mais estáveis; <b>cíclica L1 com λ igual a 10</b>, que é o que permite treinar sem pares, porque a volta precisa recuperar a entrada; e um <b>image pool de 50 imagens</b> para estabilizar o discriminador. A <b>identity ficou desligada</b>: forçar G_AB de b igual a b é pouco natural entre mapa e foto. A ablação com identity não foi treinada e fica como trabalho futuro.</p>
+</div>
+<p class="passa">Passa para o apresentador 2: “Com o modelo definido, o próximo apresentador mostra como foi o treino.”</p>
+</div>
+</div></section>
+
+<!-- ===================== PARTE 2 ===================== -->
+<section class="part" id="p2"><div class="wrap">
+<h2>Apresentador 2 · Treino e resultados por época</h2>
+<p class="meta">Slides 5 a 8 · cerca de 3 min 20 s</p>
+
+<div class="slide"><p class="t">Slide 5 · Treinamento · 0:50</p><h3>100 épocas em uma RTX 2060 de 6 GB</h3>
+<p class="tela">Na tela: quatro números (100 épocas, 40,1 h, 24,1 min por época, 5,0 GB) e a lista de parâmetros.</p>
+<div class="fala">
+<p>Treinamos <b>100 épocas</b> numa <b>RTX 2060 de 6 GB</b>. Cada época tem 6.586 iterações. A média foi de <b>24,1 minutos por época</b>, cerca de 4,6 iterações por segundo, e o total deu <b>40,1 horas</b>. O pico de memória foi de <b>5,0 GB</b>, e coube porque usamos precisão mista em fp16 e batch 1. O gargalo era a CPU, não a GPU.</p>
+<p>Os parâmetros: Adam com <b>learning rate 2 vezes 10 elevado a menos 4</b>, beta 0,5 e 0,999. O LR fica <b>constante até a época 50</b> e depois cai linearmente até quase zero na 100. Esse LR é calculado direto do número da época, sem estado de scheduler. Por isso pudemos pausar e retomar o treino várias vezes, até depois de uma queda de energia, sem mudar o agendamento.</p>
+</div></div>
+
+<div class="slide"><p class="t">Slide 6 · Curvas de treino · 0:50</p><h3>D_B vence; a cíclica cai até o fim</h3>
+<p class="tela">Na tela: gráfico adversarial (linhas cheias = geradores, tracejadas = discriminadores) e gráfico da cíclica.</p>
+<div class="fala">
+<p>Primeiro, as curvas adversariais. O discriminador de satélite, <b>D_B, cai de 0,20 para 0,01</b>, enquanto a perda do gerador <b>G_adv A→B sobe de 0,45 para 0,96</b>, o treino inteiro, inclusive quando o LR já está caindo. Isso é o sinal clássico de <b>discriminador forte demais</b>: ele distingue com facilidade as fotos geradas. No outro sentido o equilíbrio é melhor: G_adv B→A fica perto de 0,8 e D_A perto de 0,05.</p>
+<p>Há picos pontuais de G_adv B→A nas <b>épocas 61 a 65 e 83 e 84</b>, quando D_A chegou a 0,002. Foram oscilações: na época seguinte o equilíbrio voltou sem intervenção, e o treino <b>nunca colapsou nem gerou NaN</b>. <b>Não identificamos a causa</b>: o LR cai de forma suave e o tempo por época não tem anomalia. Nas amostras, a época 63 sai com cores saturadas.</p>
+<p>No gráfico da cíclica, as duas caem cerca de <b>60%</b>: de 0,23 para 0,09 em A, e de 0,21 para 0,08 em B. Mas guardem: uma cíclica baixa não garante uma boa tradução. O terceiro apresentador vai mostrar por quê.</p>
+</div></div>
+
+<div class="slide"><p class="t">Slide 7 · Evolução A → B · 0:50</p><h3>Mapa → satélite ao longo do treino</h3>
+<p class="tela">Na tela: 4 imagens de teste; colunas = real, épocas 1, 5, 10, 25, 50, 75, 100 e reconstrução. Rótulos Bom/Ruim à esquerda.</p>
+<div class="fala">
+<p>Aqui, quatro imagens fixas de <b>teste</b>, nunca vistas no treino, traduzidas ao longo das épocas. Na <b>época 1</b>, tudo sai verde-escuro com manchas. Na <b>época 10</b>, um tom marrom-oliva. A partir da <b>50</b>, cores mais calmas e textura de satélite. A estrutura, como costa, lagoa, quadras e rios, aparece cedo e quase não muda: o que evolui é cor e textura.</p>
+<p>Dois casos <b>bons</b>: costa e lagoa preservadas, e rios e estradas preservados, com cara de foto aérea. Dois <b>ruins</b>: lotes que viram blocos escuros, com os números copiados; e uma imagem lavada em que a palavra <b>“CANAL”</b> continua escrita no satélite. A reconstrução da época 100 é fiel nos quatro, mesmo nos ruins.</p>
+</div></div>
+
+<div class="slide"><p class="t">Slide 8 · Evolução B → A · 0:50</p><h3>Satélite → mapa ao longo do treino</h3>
+<p class="tela">Na tela: 4 imagens de satélite do teste (Providence, Baltimore em dois zooms, Sacramento), mesmo formato do slide anterior.</p>
+<div class="fala">
+<p>No sentido contrário, o <b>estilo de mapa</b>, com papel creme, tinta e hachura, aparece já na época 10. Na época 5 as quatro saídas têm faixas horizontais coloridas, que somem depois: uma oscilação do começo do treino.</p>
+<p>Os dois <b>bons</b> são Baltimore, em dois zooms: quadras e prédios preservados, e uma malha fina em estilo de gravura. Os dois <b>ruins</b>: Providence, com <b>manchas rosa</b> sem correspondência e traço pesado, e Sacramento, em que as <b>árvores somem</b> e sobra papel com pseudo-texto. O rosa-magenta falta nas épocas 50 e 75, mas aparece nas 90, 95, 98 e 100. Pode ser imitação do rosa dos prédios em mapas de seguro antigos, ou um artefato tardio; com 4 imagens não dá para afirmar. Consequência: o modelo final não é necessariamente o melhor snapshot, e o próximo passo é escolher a época por inspeção das amostras, não só pela cíclica.</p>
+<p>Atenção: só Baltimore é região inédita no treino. As outras têm outros tiles no treino.</p>
+</div>
+<p class="passa">Passa para o apresentador 3: “Agora que vimos exemplos, o terceiro apresentador olha o teste inteiro e explica por que o modelo falha onde falha.”</p>
+</div>
+</div></section>
+
+<!-- ===================== PARTE 3 ===================== -->
+<section class="part" id="p3"><div class="wrap">
+<h2>Apresentador 3 · Casos e análise crítica</h2>
+<p class="meta">Slides 9 a 12 · cerca de 4 min</p>
+
+<div class="slide"><p class="t">Slide 9 · Casos bons e ruins · 0:55</p><h3>Casos bons e ruins pela cíclica L1</h3>
+<p class="tela">Na tela: 2 melhores e 2 piores de A→B e de B→A. A figura completa (4 e 4) está em runs/principal/casos_*.jpg.</p>
+<div class="fala">
+<p>Até aqui vimos 8 imagens. Para não escolher a dedo, rodamos o <b>teste inteiro</b>, 1.056 mapas e 947 satélites, e ordenamos pela <b>cíclica L1</b>: os extremos do ranking são os casos bons e ruins, escolhidos sem olhar a imagem antes. Atenção: o ranking mede a fidelidade da <b>reconstrução</b>, não a qualidade da tradução. No conjunto, a reconstrução dá <b>PSNR de 22,3 dB em A e 23,4 dB em B, e SSIM por volta de 0,82</b>. Isso mede só a reconstrução, não o realismo da tradução.</p>
+<p>Em <b>A→B</b>, os melhores, com L1 de 0,034 a 0,043, são <b>mapas cadastrais de papel creme</b>, e o texto continua legível no satélite gerado, como “MICHIGAN” e “GEORGIA”. Os piores, de 0,31 a 0,33, são <b>mapas coloridos ou ilustrados</b>: a cor do papel não volta igual: a informação de cor foi perdida, sem sinal de esteganografia.</p>
+<p>Em <b>B→A</b>, os melhores, de 0,046 a 0,051, são <b>mata e campos</b>: a tradução é papel quase vazio, e mesmo assim a reconstrução devolve a mata: é o padrão da falha 3. Os piores, até 0,417, são a <b>neve das Cascades</b>, que não tem equivalente em mapa.</p>
+</div></div>
+
+<div class="slide"><p class="t">Slide 10 · Falhas 1 e 2 · 1:20</p><h3>Texto não some; mapa → satélite é o sentido difícil</h3>
+<p class="tela">Na tela: dois blocos Evidência/Hipótese e a linha “Como testar”.</p>
+<div class="fala">
+<p><b>Falha 1: o texto do mapa não some, é copiado ou inventado.</b> Evidência: “CANAL”, “LEMBERG” e os números de lote “404” e “405” continuam como letras sobre o satélite; no outro sentido surge uma escrita cursiva sem sentido. Nossa hipótese: satélite não tem equivalente de texto, apagá-lo custaria perda cíclica, e o PatchGAN 70 por 70 julga textura local, então <b>tolera letras pequenas</b>. No outro sentido, D_A aprendeu que mapas têm rótulos, e o G_BA <b>inventa texto para enganá-lo</b>. É a CycleGAN fazendo exatamente o que a perda pede.</p>
+<p><b>Falha 2: mapa para satélite é o sentido mais difícil.</b> Evidência nas curvas: D_B a 0,01 e G_adv A→B a 0,96. Evidência nas imagens: saídas lavadas, com textura repetitiva, em que o mar vira copa de árvore. Hipótese: <b>assimetria de informação</b>. De foto para mapa, descarta-se detalhe; de mapa para foto, é preciso inventar telhados, copas e sombras que o mapa não registra. O gerador cai numa textura média, que o D_B reconhece.</p>
+<p>Como testar: contar texto nas saídas do teste, treinar com recortes sem texto ou mascarar o texto na perda cíclica, e reduzir o aprendizado do D_B. <b>Nenhum desses testes foi feito ainda.</b></p>
+</div></div>
+
+<div class="slide"><p class="t">Slide 11 · Falha 3 · 1:10</p><h3>Reconstruções quase perfeitas a partir de traduções ruins</h3>
+<p class="tela">Na tela: Evidência, Hipótese, Teste e as barras de sensibilidade (marca em 1 = sem amplificação).</p>
+<div class="fala">
+<p>A terceira falha é a mais importante. Evidência: nos 8 casos fixos dos slides 7 e 8, a reconstrução é fiel (L1 de 0,05 a 0,16, contra uma mediana de 0,10 no teste), mesmo com tradução ruim. O bairro arborizado vira <b>quase papel vazio</b> no mapa, mas a reconstrução <b>devolve as copas das árvores</b>. Uma tradução que descarta as copas não deveria permitir reconstruí-las. Hipótese: <b>esteganografia</b>, como descrito por Chu e colegas em 2017. O gerador esconde a imagem original em sinais de baixa amplitude, quase invisíveis, e o outro gerador os decodifica. A perda cíclica cai sem a tradução ficar fiel.</p>
+<p>Para testar, somamos um <b>ruído pequeno à tradução</b>, com desvio 0,02 e 0,05, antes do segundo gerador. Se a reconstrução piorar muito mais do que o ruído explica, havia informação escondida. O resultado foi <b>misto</b>. A <b>sensibilidade</b> é o quanto a reconstrução muda, dividido pelo tamanho do ruído: acima de 1, o segundo gerador amplifica o ruído. Em <b>A→B→A</b>, o G_BA amplifica, cerca de 3 vezes: <b>2,93 e 3,62</b>. Em <b>B→A→B</b>, não: <b>0,83 e 1,00</b>. Então confirmamos <b>só em um sentido</b>. Foram só 50 imagens, dois valores de ruído e nenhum modelo de controle para saber quanto amplificar é normal: é um indício, não uma prova.</p>
+</div></div>
+
+<div class="slide"><p class="t">Slide 12 · Conclusão · 0:45</p><h3>A CycleGAN aprendeu o estilo e a estrutura, mas não aprende a inventar o que falta</h3>
+<p class="tela">Na tela: três cartões, “Próximos passos” e “Limitações”.</p>
+<div class="fala">
+<p>Resumindo em três ideias. <b>Satélite para mapa funciona melhor</b>: descartar detalhe é fácil, e ruas e quadras viram traço de mapa convincente. <b>Mapa para satélite fica limitado</b>: é preciso inventar textura que o mapa não tem, e o discriminador de satélite vence. E <b>perda cíclica baixa não basta</b>: reconstruções boas a partir de traduções ruins sugerem informação escondida.</p>
+<p>Sobre as limitações: foi <b>uma única execução</b>, com seed 42; não calculamos FID, então o realismo é julgado a olho; o teste de B usa as mesmas regiões do treino, em tiles diferentes (só Baltimore é inédita); e os domínios estão desalinhados em escala e região, o que pode explicar parte das falhas. Como próximos passos, a <b>ablação com identity loss</b>, uma <b>máscara de texto</b>, e mapas e satélites da <b>mesma região e escala</b>.</p>
+<p>Obrigado. Ficamos à disposição para perguntas.</p>
+</div></div>
+</div></section>
+
+<!-- ===================== Q&A ===================== -->
+<section class="qa" id="qa"><div class="wrap">
+<h2>Perguntas prováveis</h2>
+<dl>
+<dt>Por que as imagens não ficaram mais bonitas?</dt>
+<dd>O trabalho avalia a análise. Cada falha tem evidência e hipótese, e o que não testamos está dito como não testado.</dd>
+<dt>Por que a identity loss ficou desligada?</dt>
+<dd>Forçaria G_AB(b) ≈ b, pouco natural entre mapa e foto. O efeito de ligá-la (λ_id = 0,5) não foi medido, porque a ablação não foi treinada.</dd>
+<dt>As métricas provam que a tradução é boa?</dt>
+<dd>Não. Cíclica, PSNR e SSIM medem só a reconstrução. Não há referência para a tradução, e não calculamos FID nem fizemos avaliação humana.</dd>
+<dt>O teste de B não é muito fácil?</dt>
+<dd>É otimista: 20 das 21 regiões do teste também estão no treino (785 de 947 imagens), em tiles diferentes. Só Baltimore (162 imagens) é inédita. Em A, nenhum mapa do teste está no treino.</dd>
+<dt>Como vocês sabem que é esteganografia?</dt>
+<dd>Não sabemos. O teste de ruído é um indício: confirma em A→B→A (sensibilidade 2,93 e 3,62) e não em B→A→B (0,83 e 1,00). Pode haver informação em variações suaves de cor, que ruído por pixel não destrói (não testado).</dd>
+<dt>Por que não usaram data augmentation?</dt>
+<dd>O flip espelharia o texto dos mapas, criando exemplos que não existem no domínio. As imagens já vêm recortadas em 256 × 256.</dd>
+<dt>Quanto tempo levou o treino?</dt>
+<dd>40,1 horas, 24,1 min por época em média, numa RTX 2060 de 6 GB, com pico de 5,0 GB de VRAM. O gargalo era a CPU.</dd>
+<dt>Por que não usaram a Library of Congress?</dt>
+<dd>O loc.gov bloqueia acesso automatizado (HTTP 403 em qualquer requisição de script).</dd>
+</dl>
+</div></section>
+</body>
+</html>

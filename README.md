@@ -250,7 +250,7 @@ O pior caso é o bairro muito arborizado: copa de árvore não tem equivalente e
 | B→A→B | 0,02 | 0,1079 | 0,1093 | 0,0014 | 0,09 | 0,83 |
 | B→A→B | 0,05 | 0,1079 | 0,1193 | 0,0114 | 0,29 | 1,00 |
 
-A sensibilidade é a L1 entre a reconstrução com ruído e a sem ruído, dividida pela L1 do ruído; o limiar do script é 3,0.
+A sensibilidade é a L1 entre a reconstrução com ruído e a sem ruído, dividida pela L1 do ruído; acima de 1, o segundo gerador amplifica o ruído. O limiar 3,0 do script vale para a razão (aumento da cíclica ÷ L1 do ruído), não para a sensibilidade, e nenhuma linha o ultrapassa (máximo 1,96). Não há modelo de controle para dizer quanto de amplificação é normal.
 
 - *Leitura:* o resultado é **misto e só confirma a hipótese em parte**. Em A→B→A, o G_BA amplifica o ruído (sensibilidade 2,93 e 3,62, razão chegando a 1,96 com σ = 0,05), o que combina com informação em alta frequência escondida na tradução. Em B→A→B não há amplificação (sensibilidade 0,83 e 1,00; o aumento fica abaixo do ruído). Nesse sentido o teste **não** encontrou esteganografia de alta frequência, embora os melhores casos reconstruam mata a partir de papel quase vazio. Uma possível explicação, não testada, é que a informação viaje em variações suaves de cor, que um ruído gaussiano independente por pixel não destrói. Com 50 imagens e dois valores de σ, o teste é um indício, não uma prova.
 
